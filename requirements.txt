@@ -1,0 +1,4 @@
+numpy>=1.24
+gymnasium>=0.29
+pygame>=2.5
+stable-baselines3[extra]>=2.3

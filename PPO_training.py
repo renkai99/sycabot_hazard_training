@@ -35,7 +35,7 @@ class RewardComponentTensorboardCallback(BaseCallback):
             self.delivery_vals.clear()
 
 
-CONTINUE_FROM_PREVIOUS = False
+CONTINUE_FROM_PREVIOUS = True
 
 
 env = SycaBotEnv(
