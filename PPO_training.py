@@ -9,30 +9,22 @@ from sycabot_env import SycaBotEnv
 class RewardComponentTensorboardCallback(BaseCallback):
     def __init__(self, verbose=0):
         super().__init__(verbose)
-        self.progress_vals = []
-        self.pickup_vals = []
-        self.delivery_vals = []
+        self._keys = ["reward_progress", "reward_pickup", "reward_delivery", "reward_survival"]
+        self._bufs = {k: [] for k in self._keys}
 
     def _on_step(self) -> bool:
         for info in self.locals.get("infos", []):
-            if "reward_progress" in info:
-                self.progress_vals.append(float(info["reward_progress"]))
-            if "reward_pickup" in info:
-                self.pickup_vals.append(float(info["reward_pickup"]))
-            if "reward_delivery" in info:
-                self.delivery_vals.append(float(info["reward_delivery"]))
+            for k in self._keys:
+                if k in info:
+                    self._bufs[k].append(float(info[k]))
         return True
 
     def _on_rollout_end(self) -> None:
-        if self.progress_vals:
-            self.logger.record("reward_components/progress", sum(self.progress_vals) / len(self.progress_vals))
-            self.progress_vals.clear()
-        if self.pickup_vals:
-            self.logger.record("reward_components/pickup", sum(self.pickup_vals) / len(self.pickup_vals))
-            self.pickup_vals.clear()
-        if self.delivery_vals:
-            self.logger.record("reward_components/delivery", sum(self.delivery_vals) / len(self.delivery_vals))
-            self.delivery_vals.clear()
+        for k, vals in self._bufs.items():
+            if vals:
+                tag = "reward_components/" + k.removeprefix("reward_")
+                self.logger.record(tag, sum(vals) / len(vals))
+                vals.clear()
 
 
 CONTINUE_FROM_PREVIOUS = True
